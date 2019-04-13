@@ -1,0 +1,70 @@
+testbed:
+
+  name: net_dev_test_example_default_8I7BLw
+
+  tacacs:
+    username: "%ENV{PYATS_USERNAME}"
+  passwords:
+    tacacs: "%ENV{PYATS_PASSWORD}"
+    enable: "%ENV{PYATS_AUTH_PASS}"
+    line: "%ENV{PYATS_PASSWORD}"
+
+devices:
+
+  router1:
+    alias: router1
+    os: ios
+    type: IOSv
+    platform: IOSv
+
+    connections:
+
+      defaults:
+        class: unicon.Unicon
+      console:
+        protocol: telnet
+        ip: 10.82.12.236
+        port: 17000
+    custom:
+      abstraction:
+        order: [os, type]
+
+  router2:
+    alias: router2
+    os: ios
+    type: IOSv
+    platform: IOSv
+
+    connections:
+
+      defaults:
+        class: unicon.Unicon
+      console:
+        protocol: telnet
+        ip: 10.82.12.236
+        port: 17003
+    custom:
+      abstraction:
+        order: [os, type]
+
+topology:
+  router1:
+    interfaces:
+      GigabitEthernet0/1:
+        ipv4: 10.255.0.5/30
+        link: router1-to-router2
+        type: ethernet
+      GigabitEthernet0/0:
+        ipv4: 172.16.1.57/24
+        link: flat
+        type: ethernet
+  router2:
+    interfaces:
+      GigabitEthernet0/1:
+        ipv4: 10.255.0.6/30
+        link: router1-to-router2
+        type: ethernet
+      GigabitEthernet0/0:
+        ipv4: 172.16.1.58/24
+        link: flat
+        type: ethernet
