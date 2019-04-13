@@ -21,8 +21,6 @@ or implied.
 
 import sys
 
-import click
-
 
 __author__ = "Sam Byers"
 __email__ = "sabyers@cisco.com"
