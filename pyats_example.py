@@ -52,7 +52,7 @@ class common_setup(aetest.CommonSetup):
                         goto = ['exit'])
 
         # abort/fail the testscript if no matching device was provided
-        for ios_name in (ios1_name, ios2_name):
+        for ios_name in (router1_name, router2_name):
             if ios_name not in testbed:
                 self.failed('testbed needs to contain device {ios_name}'.format(
                                         ios_name=ios_name,
@@ -66,27 +66,27 @@ class common_setup(aetest.CommonSetup):
         self.parent.parameters.update(router1 = router1, router2 = router2)
 
         # get corresponding links
-        links = ios1.find_links(ios2)
-        assert len(links) >= 1, 'require one link between ios1 and ios2'
+        links = router1.find_links(router2)
+        assert len(links) >= 1, 'require one link between router1 and router2'
 
         # save link as uut link parameter
         self.parent.parameters['uut_link'] = links.pop()
 
 
     @aetest.subsection
-    def establish_connections(self, steps, ios1, ios2):
+    def establish_connections(self, steps, router1, router2):
         '''
         establish connection to both devices
         '''
 
         with steps.start('Connecting to Router-1'):
-            ios1.connect()
+            router1.connect()
 
         with steps.start('Connecting to Router-2'):
-            ios2.connect()
+            router2.connect()
 
         # abort/fail the testscript if any device isn't connected
-        if not ios1.connected or not ios2.connected:
+        if not router1.connected or not router2.connected:
             self.failed('One of the two devices could not be connected to',
                         goto = ['exit'])
 
@@ -108,7 +108,7 @@ class common_setup(aetest.CommonSetup):
 #
 # Ping Testcase: leverage dual-level looping
 #
-@aetest.loop(device = ('ios1', 'ios2'))
+@aetest.loop(device = ('router1', 'router2'))
 class PingTestcase(aetest.Testcase):
     '''Ping test'''
 
@@ -195,7 +195,7 @@ class VerifyInterfaceCountTestcase(aetest.Testcase):
 
         ROM: Bootstrap program is IOSv
 
-        ios2 uptime is 1 hour, 17 minutes
+        router2 uptime is 1 hour, 17 minutes
         System returned to ROM by reload
         System image file is "flash0:/vios-adventerprisek9-m"
         Last reload reason: Unknown reason
@@ -291,16 +291,16 @@ class common_cleanup(aetest.CommonCleanup):
     '''disconnect from ios routers'''
 
     @aetest.subsection
-    def disconnect(self, steps, ios1, ios2):
+    def disconnect(self, steps, router1, router2):
         '''disconnect from both devices'''
 
         with steps.start('Disconnecting from Router-1'):
-            ios1.disconnect()
+            router1.disconnect()
 
         with steps.start('Disconnecting from Router-2'):
-            ios2.disconnect()
+            router2.disconnect()
 
-        if ios1.connected or ios2.connected:
+        if router1.connected or router2.connected:
             # abort/fail the testscript if device connection still exists
             self.failed('One of the two devices could not be disconnected from',
                         goto = ['exit'])
