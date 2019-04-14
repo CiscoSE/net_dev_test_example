@@ -37,10 +37,7 @@ class common_setup(aetest.CommonSetup):
     '''
 
     @aetest.subsection
-    def check_topology(self,
-                       testbed,
-                       router1_name = 'router1',
-                       router2_name = 'router2'):
+    def check_topology(self, testbed):
         '''
         check that we have at least two devices and a link between the devices
         If so, mark the next subsection for looping.
@@ -51,44 +48,55 @@ class common_setup(aetest.CommonSetup):
             self.failed('No testbed was provided to script launch',
                         goto = ['exit'])
 
+        router1 = testbed.devices['router1']
+        router2 = testbed.devices['router2']
+        router3 = testbed.devices['router3']
+        router4 = testbed.devices['router4']
+        router5 = testbed.devices['router5']
+        router6 = testbed.devices['router6']
+
+        routers = (router1,router2,router3,router4,router5,router6)
+
         # abort/fail the testscript if no matching device was provided
-        for ios_name in (router1_name, router2_name):
+        for ios_name in routers:
             if ios_name not in testbed:
                 self.failed('testbed needs to contain device {ios_name}'.format(
                                         ios_name=ios_name,
                                     ),
                             goto = ['exit'])
 
-        router1 = testbed.devices[router1_name]
-        router2 = testbed.devices[router2_name]
-
         # add them to testscript parameters
-        self.parent.parameters.update(router1 = router1, router2 = router2)
+        self.parent.parameters.update(router1 = router1,
+                                        router2 = router2,
+                                        router3 = router3,
+                                        router4 = router4,
+                                        router5 = router5,
+                                        router6 = router6,
+                                        routers = routers)
 
         # get corresponding links
         links = router1.find_links(router2)
-        assert len(links) >= 1, 'require one link between router1 and router2'
+        assert len(links) >= 1, 'quick check of links between r1 and r2'
 
         # save link as uut link parameter
         self.parent.parameters['uut_link'] = links.pop()
 
 
     @aetest.subsection
-    def establish_connections(self, steps, router1, router2):
+    def establish_connections(self, steps, routers):
         '''
         establish connection to both devices
         '''
 
-        with steps.start('Connecting to Router-1'):
-            router1.connect()
-
-        with steps.start('Connecting to Router-2'):
-            router2.connect()
+        for rtr in routers:
+            with steps.start('Connecting to {}'.format(rtr)):
+                rtr.connect()
 
         # abort/fail the testscript if any device isn't connected
-        if not router1.connected or not router2.connected:
-            self.failed('One of the two devices could not be connected to',
-                        goto = ['exit'])
+        for rtr in routers:
+            if not rtr.connected:
+                self.failed('One of the devices could not be connected to',
+                            goto = ['exit'])
 
     @aetest.subsection
     def marking_interface_count_testcases(self, testbed):
@@ -108,7 +116,7 @@ class common_setup(aetest.CommonSetup):
 #
 # Ping Testcase: leverage dual-level looping
 #
-@aetest.loop(device = ('router1', 'router2'))
+@aetest.loop(device = ('router1','router2','router3','router4','router5','router6'))
 class PingTestcase(aetest.Testcase):
     '''Ping test'''
 
@@ -118,7 +126,9 @@ class PingTestcase(aetest.Testcase):
     def setup(self, uut_link):
         destination = []
         for intf in uut_link.interfaces:
-            destination.append(str(intf.ipv4.ip))
+            # Fixes issue where the mgmt intf is used for reachability testing
+            if 'cisco' not in str(intf.link):
+                destination.append(str(intf.ipv4.ip))
 
         # apply loop to next section
         aetest.loop.mark(self.ping, destination = destination)
@@ -187,34 +197,62 @@ class VerifyInterfaceCountTestcase(aetest.Testcase):
         Sample of show version command result:
 
         show version
-        Cisco IOS Software, IOSv Software (VIOS-ADVENTERPRISEK9-M), Version 15.6(2)T, RELEASE SOFTWARE (fc2)
+        Cisco IOS XE Software, Version 16.09.01
+        Cisco IOS Software [Fuji], Virtual XE Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 16.9.1, RELEASE SOFTWARE (fc2)
         Technical Support: http://www.cisco.com/techsupport
-        Copyright (c) 1986-2016 by Cisco Systems, Inc.
-        Compiled Tue 22-Mar-16 16:19 by prod_rel_team
+        Copyright (c) 1986-2018 by Cisco Systems, Inc.
+        Compiled Tue 17-Jul-18 16:57 by mcpre
 
 
-        ROM: Bootstrap program is IOSv
+        Cisco IOS-XE software, Copyright (c) 2005-2018 by cisco Systems, Inc.
+        All rights reserved.  Certain components of Cisco IOS-XE software are
+        licensed under the GNU General Public License ("GPL") Version 2.0.  The
+        software code licensed under GPL Version 2.0 is free software that comes
+        with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+        GPL code under the terms of GPL Version 2.0.  For more details, see the
+        documentation or "License Notice" file accompanying the IOS-XE software,
+        or the applicable URL provided on the flyer accompanying the IOS-XE
+        software.
 
-        router2 uptime is 1 hour, 17 minutes
+
+        ROM: IOS-XE ROMMON
+
+        router6 uptime is 1 hour, 32 minutes
+        Uptime for this control processor is 1 hour, 34 minutes
         System returned to ROM by reload
-        System image file is "flash0:/vios-adventerprisek9-m"
-        Last reload reason: Unknown reason
+        System image file is "bootflash:packages.conf"
+        Last reload reason: Reload Command
 
-        <....>
 
-        Cisco IOSv (revision 1.0) with  with 484609K/37888K bytes of memory.
-        Processor board ID 9QTSICFAZS7Q2I61N8WNZ
+
+        This product contains cryptographic features and is subject to United
+        States and local country laws governing import, export, transfer and
+        use. Delivery of Cisco cryptographic products does not imply
+        third-party authority to import, export, distribute or use encryption.
+        Importers, exporters, distributors and users are responsible for
+        compliance with U.S. and local country laws. By using this product you
+        agree to comply with applicable laws and regulations. If you are unable
+        to comply with U.S. and local laws, return this product immediately.
+
+        A summary of U.S. laws governing Cisco cryptographic products may be found at:
+        http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+
+        If you require further assistance please contact us by sending email to
+        export@cisco.com.
+
+        License Level: ax
+        License Type: Default. No valid license found.
+        Next reload license Level: ax
+
+        cisco CSR1000V (VXE) processor (revision VXE) with 1217428K/3075K bytes of memory.
+        Processor board ID 9IOUX800GMO
         2 Gigabit Ethernet interfaces
-        DRAM configuration is 72 bits wide with parity disabled.
-        256K bytes of non-volatile configuration memory.
-        2097152K bytes of ATA System CompactFlash 0 (Read/Write)
-        0K bytes of ATA CompactFlash 1 (Read/Write)
-        0K bytes of ATA CompactFlash 2 (Read/Write)
-        10080K bytes of ATA CompactFlash 3 (Read/Write)
+        32768K bytes of non-volatile configuration memory.
+        3018864K bytes of physical memory.
+        7774207K bytes of virtual hard disk at bootflash:.
+        0K bytes of WebUI ODM Files at webui:.
 
-
-
-        Configuration register is 0x0
+        Configuration register is 0x2102
 
         '''
 
@@ -255,9 +293,12 @@ class VerifyInterfaceCountTestcase(aetest.Testcase):
         Sample of show ip interface brief command result:
 
         show ip interface brief
-        Interface                  IP-Address      OK? Method Status                Protocol
-        GigabitEthernet0/0         unassigned      YES unset  administratively down down
-        GigabitEthernet0/1         10.10.10.2      YES manual up                    up
+        Interface              IP-Address      OK? Method Status                Protocol
+        GigabitEthernet1       10.255.0.45     YES TFTP   up                    up
+        GigabitEthernet2       10.0.0.22       YES TFTP   up                    up
+        GigabitEthernet3       10.0.0.25       YES TFTP   up                    up
+        GigabitEthernet4       10.0.0.14       YES TFTP   up                    up
+        Loopback0              192.168.0.5     YES TFTP   up                    up
         '''
 
         try:
@@ -273,7 +314,7 @@ class VerifyInterfaceCountTestcase(aetest.Testcase):
                         goto = ['exit'])
         else:
             # extract ethernet interfaces
-            ethernet_interfaces = re.finditer(r'\r\nGigabitEthernet\d+/\d+\s+', result)
+            ethernet_interfaces = re.finditer(r'GigabitEthernet\d', result)
             # total number of ethernet interface
             len_ethernet_interfaces = len(tuple(ethernet_interfaces))
 
@@ -291,19 +332,17 @@ class common_cleanup(aetest.CommonCleanup):
     '''disconnect from ios routers'''
 
     @aetest.subsection
-    def disconnect(self, steps, router1, router2):
+    def disconnect(self, steps, routers):
         '''disconnect from both devices'''
 
-        with steps.start('Disconnecting from Router-1'):
-            router1.disconnect()
-
-        with steps.start('Disconnecting from Router-2'):
-            router2.disconnect()
-
-        if router1.connected or router2.connected:
-            # abort/fail the testscript if device connection still exists
-            self.failed('One of the two devices could not be disconnected from',
-                        goto = ['exit'])
+        for rtr in routers:
+            with steps.start('Disconnecting from {}'.format(rtr)):
+                rtr.disconnect()
+        for rtr in routers:
+            if rtr.connected:
+                # abort/fail the testscript if device connection still exists
+                self.failed('One of the devices could not be disconnected from',
+                            goto = ['exit'])
 
 
 if __name__ == '__main__':

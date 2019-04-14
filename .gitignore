@@ -1,5 +1,14 @@
+# pyATS and Genie stuff
+archive
+runinfo
+html_logs
+
+# macOS stuff
+.DS_Store
+
 # VIRL stuff
 .virlrc
+.virl/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
