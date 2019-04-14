@@ -14,6 +14,12 @@ IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 """
 
+__author__ = "Sam Byers"
+__email__ = "sabyers@cisco.com"
+__version__ = "0.1.0"
+__copyright__ = "Copyright (c) 2019 Cisco and/or its affiliates."
+__license__ = "Cisco Sample Code License, Version 1.1"
+
 
 import re
 import logging
