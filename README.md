@@ -2,7 +2,6 @@
 
 *Example of network development tooling for dev and test.*
 
----
 ## Motivation
 
 This repo of netdev examples was put together to test and learn about virlutils, pyATS, and Genie.
@@ -57,7 +56,7 @@ Using the example is easy:
 
 ## Credits
 
-Most of the code in this repo is copypasta from the various example repos on DevNet. Here is some of people credited with this awesome work:
+Most of the code in this repo is copypasta from the various example repos on DevNet. Here is some of the people credited with this awesome work:
 - kecorbin
 - RunSi
 - jeaubin
