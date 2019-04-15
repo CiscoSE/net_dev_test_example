@@ -76,8 +76,11 @@ class common_setup(aetest.CommonSetup):
                                         routers = routers)
 
         # get corresponding links
-        links = router1.find_links(router2)
-        assert len(links) >= 1, 'quick check of links between r1 and r2'
+        links = []
+        for rtr in routers:
+            links.append(rtr.find_links())
+        #links = router1.find_links(router2)
+        assert len(links) >= 1, 'quick check of links'
 
         # save link as uut link parameter
         self.parent.parameters['uut_link'] = links.pop()
