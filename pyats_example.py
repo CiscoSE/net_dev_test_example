@@ -78,7 +78,8 @@ class common_setup(aetest.CommonSetup):
         # get corresponding links
         links = []
         for rtr in routers:
-            routers_tmp = routers.remove(rtr)
+            routers_tmp = list(routers)
+            routers_tmp.remove(rtr)
             for nbr in routers_tmp:
                 links.append(rtr.find_links(nbr))
         #links = router1.find_links(router2)
