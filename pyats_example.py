@@ -82,9 +82,7 @@ class common_setup(aetest.CommonSetup):
             routers_tmp.remove(rtr)
             for nbr in routers_tmp:
                 links.append(rtr.find_links(nbr))
-        t_links = router1.find_links(router2)
-        print(links)
-        print(t_links)
+        #links = router1.find_links(router2)
         assert len(links) >= 1, 'quick check of links'
 
         # save link as uut link parameter
