@@ -137,7 +137,7 @@ class PingTestcase(aetest.Testcase):
                 # Fixes issue where the virl mgmt intf is used for reachability testing
                 if 'cisco' not in str(intf.link):
                     destination.append(str(intf.ipv4.ip))
-
+        print(destination)
         # apply loop to next section
         aetest.loop.mark(self.ping, destination = destination)
 
