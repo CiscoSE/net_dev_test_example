@@ -134,10 +134,11 @@ class PingTestcase(aetest.Testcase):
     @aetest.setup
     def setup(self, uut_link):
         destination = []
-        for intf in uut_link.interfaces:
-            # Fixes issue where the mgmt intf is used for reachability testing
-            if 'cisco' not in str(intf.link):
-                destination.append(str(intf.ipv4.ip))
+        for links in uut_link:
+            for intf in links.interfaces:
+                # Fixes issue where the virl mgmt intf is used for reachability testing
+                if 'cisco' not in str(intf.link):
+                    destination.append(str(intf.ipv4.ip))
 
         # apply loop to next section
         aetest.loop.mark(self.ping, destination = destination)
