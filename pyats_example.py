@@ -78,7 +78,9 @@ class common_setup(aetest.CommonSetup):
         # get corresponding links
         links = []
         for rtr in routers:
-            links.append(rtr.find_links())
+            routers_tmp = routers.remove(rtr)
+            for nbr in routers_tmp:
+                links.append(rtr.find_links(nbr))
         #links = router1.find_links(router2)
         assert len(links) >= 1, 'quick check of links'
 
