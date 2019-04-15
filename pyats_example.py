@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 #
 # Common Setup Section
 #
+
 class common_setup(aetest.CommonSetup):
     '''Common Setup Section
 
@@ -51,8 +52,7 @@ class common_setup(aetest.CommonSetup):
 
         # abort/fail the testscript if no testbed was provided
         if not testbed or not testbed.devices:
-            self.failed('No testbed was provided to script launch',
-                        goto = ['exit'])
+            self.failed('No testbed was provided to script launch', goto = ['exit'])
 
         router1 = testbed.devices['router1']
         router2 = testbed.devices['router2']
@@ -61,23 +61,18 @@ class common_setup(aetest.CommonSetup):
         router5 = testbed.devices['router5']
         router6 = testbed.devices['router6']
 
-        routers = (router1,router2,router3,router4,router5,router6)
+        routers = (router1, router2, router3, router4, router5, router6)
 
         # abort/fail the testscript if no matching device was provided
         for ios_name in routers:
             if ios_name not in testbed:
-                self.failed('testbed needs to contain device {ios_name}'.format(
-                                        ios_name=ios_name,
-                                    ),
-                            goto = ['exit'])
+                self.failed('testbed needs to contain device {ios_name}'.format
+                            (ios_name=ios_name,), goto=['exit'])
 
         # add them to testscript parameters
-        self.parent.parameters.update(router1 = router1,
-                                        router2 = router2,
-                                        router3 = router3,
-                                        router4 = router4,
-                                        router5 = router5,
-                                        router6 = router6,
+        self.parent.parameters.update(router1 = router1, router2 = router2,
+                                        router3 = router3, router4 = router4,
+                                        router5 = router5, router6 = router6,
                                         routers = routers)
 
         # get corresponding links
