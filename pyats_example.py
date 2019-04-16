@@ -23,7 +23,6 @@ __license__ = "Cisco Sample Code License, Version 1.1"
 
 import re
 import logging
-
 from ats import aetest
 from ats.log.utils import banner
 
@@ -75,18 +74,17 @@ class common_setup(aetest.CommonSetup):
                                         router5 = router5, router6 = router6,
                                         routers = routers)
 
-        # get corresponding links
-        links = []
-        for rtr in routers:
-            routers_tmp = list(routers)
-            routers_tmp.remove(rtr)
-            for nbr in routers_tmp:
-                links.append(rtr.find_links(nbr))
-        #links = router1.find_links(router2)
-        assert len(links) >= 1, 'quick check of links'
+        # get corresponding ips
+        ipv4s = []
+        for dev in testbed:
+            for intf in dev:
+                if 'cisco' not in str(intf.link):
+                    ipv4s.append(str(intf.ipv4.ip))
 
-        # save link as uut link parameter
-        self.parent.parameters['uut_link'] = links.pop()
+        assert len(ipv4s) >= 1, 'quick check of ips'
+
+        # save ips as uut link parameter
+        self.parent.parameters['uut_ips'] = ipv4s
 
 
     @aetest.subsection
@@ -130,13 +128,8 @@ class PingTestcase(aetest.Testcase):
     groups = ('basic', 'looping')
 
     @aetest.setup
-    def setup(self, uut_link):
-        destination = []
-        for links in uut_link:
-            for intf in links.interfaces:
-                # Fixes issue where the virl mgmt intf is used for reachability testing
-                if 'cisco' not in str(intf.link):
-                    destination.append(str(intf.ipv4.ip))
+    def setup(self, uut_ips):
+        destination = uut_ips
         print(destination)
         # apply loop to next section
         aetest.loop.mark(self.ping, destination = destination)
