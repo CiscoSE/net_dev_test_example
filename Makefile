@@ -22,4 +22,3 @@ clean-virlutils:
 	rm -f default_testbed.yaml
 	rm -f default_inventory.yaml
 	rm -rf .virl/
-	rm -f topology.virl
